@@ -63,7 +63,7 @@ class TicketActionsView(discord.ui.View):
     async def claim_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         allowed = [ROLE_MANAGER_ID, ROLE_ADMIN_ID, ROLE_TRIAL_ADMIN_ID]
         if not any(r.id in allowed for r in interaction.user.roles) and not interaction.user.guild_permissions.administrator:
-            await interaction.response.send_message("❌ الاستلام مخصص لطاقم إدارة HAVEN!", ephemeral=True); return
+            await interaction.response.send_message("❌  الاستلام مخصص لطاقم إدارة HAVEN!", ephemeral=True); return
         button.disabled, button.label, button.style = True, "تم الاستلام", discord.ButtonStyle.secondary
         await interaction.response.edit_message(view=self)
         await interaction.channel.send(embed=discord.Embed(description=f"💼 تم استلام التذكرة بواسطة: {interaction.user.mention}", color=discord.Color.blue()))
@@ -152,9 +152,9 @@ class TicketsSystem(commands.Cog):
             description="حياك الله في قسم الدعم لـ **HAVEN**.\nعشان تفتح تذكرة، اختر القسم المناسب لمشكلتك من **القائمة بالأسفل**.",
             color=discord.Color.from_rgb(25, 25, 25)
         )
-        panel_embed.set_image(url="https://top4top.io")
+        panel_embed.set_image(url="https://e.top4top.io/p_3920jvu5k1.png")
         panel_embed.set_footer(text="إدارة سيرفر HAVEN ترحب بكم •")
-        await interaction.response.send_message("⌛ جاري التثبيت...", ephemeral=True)
+        await interaction.response.send_message("⌛ جاري التثبيت بالصورة الجديدة...", ephemeral=True)
         channel = self.bot.get_channel(PANEL_CHANNEL_ID) or interaction.channel
         await channel.send(embed=panel_embed, view=TicketDropdownView())
 
