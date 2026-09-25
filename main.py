@@ -2,10 +2,8 @@ import os
 import sys
 import discord
 from discord.ext import commands
-from dotenv import load_dotenv
 
-# تحميل التوكن من ملف .env
-load_dotenv()
+# قراءة التوكن مباشرة من متغيرات البيئة الخاصة بالاستضافة (Environment Variables)
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 # إعداد الصلاحيات (Intents)
@@ -15,7 +13,6 @@ intents.members = True
 
 class MyBot(commands.Bot):
     def __init__(self):
-        # نضع البادئة الافتراضية لكن لن نستخدمها لأن كل الأوامر سلاش
         super().__init__(command_prefix="!", intents=intents)
 
     async def setup_hook(self):
@@ -42,10 +39,11 @@ class MyBot(commands.Bot):
     async def on_ready(self):
         print(f'🤖 تم تسجيل الدخول بنجاح باسم: {self.user.name} ({self.user.id})')
 
-# تشغيل البوت بشكل صحيح بدون تكرار الكود
+# تشغيل البوت
 if __name__ == "__main__":
     bot = MyBot()
     if TOKEN:
         bot.run(TOKEN)
     else:
-        print("❌ خطأ: لم يتم العثور على التوكن في ملف .env")
+        print("❌ خطأ حرج: لم يتم العثور على المتغير 'DISCORD_TOKEN' في إعدادات الاستضافة!")
+        print("💡 تلميح: توجه إلى لوحة تحكم الاستضافة، واضف متغير جديد (Variable) باسم DISCORD_TOKEN وحط التوكن حقك داخله.")
