@@ -152,7 +152,8 @@ class TicketsSystem(commands.Cog):
             description="حياك الله في قسم الدعم لـ **HAVEN**.\nعشان تفتح تذكرة، اختر القسم المناسب لمشكلتك من **القائمة بالأسفل**.",
             color=discord.Color.from_rgb(25, 25, 25)
         )
-        panel_embed.set_image(url="https://e.top4top.io/p_3920jvu5k1.png")
+        panel_embed.set_image(url="")
+        panel_embed.set_image(url="https://j.top4top.io/p_3922qhm2x1.png")
         panel_embed.set_footer(text="إدارة سيرفر HAVEN ترحب بكم •")
         await interaction.response.send_message("⌛ جاري التثبيت بالصورة الجديدة...", ephemeral=True)
         channel = self.bot.get_channel(PANEL_CHANNEL_ID) or interaction.channel
