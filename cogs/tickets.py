@@ -9,7 +9,9 @@ PANEL_CHANNEL_ID = 1552708534192308294
 ROLE_MANAGER_ID = 1552700984336195614
 ROLE_ADMIN_ID = 1552701169611317349
 ROLE_TRIAL_ADMIN_ID = 1552701257708347412
-LOG_1, LOG_2 = 1495450684731162664, 1499889093780312204
+
+# رومات إرسال نسخة التذاكر (التحديث تضمن إضافة الروم الثالثة حقتك)
+LOG_CHANNELS = [1495450684731162664, 1499889093780312204, 1553764390946349177]
 DB_PATH = "bot_settings.db"
 
 def get_next_ticket_number():
@@ -63,7 +65,7 @@ class TicketActionsView(discord.ui.View):
     async def claim_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         allowed = [ROLE_MANAGER_ID, ROLE_ADMIN_ID, ROLE_TRIAL_ADMIN_ID]
         if not any(r.id in allowed for r in interaction.user.roles) and not interaction.user.guild_permissions.administrator:
-            await interaction.response.send_message("❌  الاستلام مخصص لطاقم إدارة HAVEN!", ephemeral=True); return
+            await interaction.response.send_message("❌ الاستلام مخصص لطاقم إدارة HAVEN!", ephemeral=True); return
         button.disabled, button.label, button.style = True, "تم الاستلام", discord.ButtonStyle.secondary
         await interaction.response.edit_message(view=self)
         await interaction.channel.send(embed=discord.Embed(description=f"💼 تم استلام التذكرة بواسطة: {interaction.user.mention}", color=discord.Color.blue()))
@@ -86,7 +88,7 @@ class TicketActionsView(discord.ui.View):
         if creator:
             try: await creator.send(embed=log_embed, file=discord.File(fp=io.BytesIO(chat_str.encode('utf-8')), filename="transcript.txt"))
             except: pass
-        for l_id in [LOG_1, LOG_2]:
+        for l_id in LOG_CHANNELS:
             ch = interaction.guild.get_channel(l_id)
             if ch:
                 try: await ch.send(embed=log_embed, file=discord.File(fp=io.BytesIO(chat_str.encode('utf-8')), filename="transcript.txt"))
@@ -147,15 +149,10 @@ class TicketsSystem(commands.Cog):
     @app_commands.command(name="setup-ticket", description="Sends the HAVEN ticket creation menu")
     @app_commands.checks.has_permissions(administrator=True)
     async def setup_ticket(self, interaction: discord.Interaction):
-        panel_embed = discord.Embed(
-            title="⚙️ الدعم الفني",
-            description="حياك الله في قسم الدعم لـ **HAVEN**.\nعشان تفتح تذكرة، اختر القسم المناسب لمشكلتك من **القائمة بالأسفل**.",
-            color=discord.Color.from_rgb(25, 25, 25)
-        )
-        panel_embed.set_image(url="")
+        panel_embed = discord.Embed(title="⚙️ الدعم الفني", description="حياك الله في قسم الدعم لـ **HAVEN**.\nعشان تفتح تذكرة، اختر القسم المناسب لمشكلتك من **القائمة بالأسفل**.", color=discord.Color.from_rgb(25, 25, 25))
         panel_embed.set_image(url="https://j.top4top.io/p_3922qhm2x1.png")
         panel_embed.set_footer(text="إدارة سيرفر HAVEN ترحب بكم •")
-        await interaction.response.send_message("⌛ جاري التثبيت بالصورة الجديدة...", ephemeral=True)
+        await interaction.response.send_message("⌛ جاري التثبيت...", ephemeral=True)
         channel = self.bot.get_channel(PANEL_CHANNEL_ID) or interaction.channel
         await channel.send(embed=panel_embed, view=TicketDropdownView())
 
