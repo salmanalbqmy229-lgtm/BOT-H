@@ -4,10 +4,17 @@ from discord.ext import commands
 
 # --- إعدادات المعرفات (IDs) لـ HAVEN ---
 PANEL_CHANNEL_ID = 1552708534192308294
-TARGET_SEND_CHANNEL_ID = 1552708739633516554 # الروم الجديدة لإرسال اللوحة للأعضاء
+TARGET_SEND_CHANNEL_ID = 1552708739633516554
+
+# الرتب المصرح لها فقط بالقبول والرفض (أونر و كونر)
+ALLOWED_APPROVE_ROLES = [1552700483938947072, 1552699892214792256]
+
+# رتب الإدارة التي يتم عمل منشن لها عند وصول طلب جديد للروم
 ROLE_MANAGER_ID = 1552700984336195614
 ROLE_ADMIN_ID = 1552701169611317349
-LOG_1, LOG_2 = 1495450684731162664, 1499889093780312204
+
+# رومات إرسال نسخة الطلبات التلقائية
+LOG_CHANNELS = [1495450684731162664, 1499889093780312204, 1553771326643380476]
 
 def generate_request_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=7))
@@ -17,13 +24,24 @@ class RequestActionsView(discord.ui.View):
         super().__init__(timeout=None)
         self.user_id, self.req_type, self.details = user_id, req_type, details
 
+    async def check_permission(self, interaction: discord.Interaction):
+        # السماح للأونر والكونر أو أي شخص لديه صلاحية Administrator كاملة بالسيرفر
+        user_role_ids = [role.id for role in interaction.user.roles]
+        if not any(r_id in ALLOWED_APPROVE_ROLES for r_id in user_role_ids) and not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message("❌ القبول والرفض مخصص للأونر والكونر فقط يا بعدي!", ephemeral=True)
+            return False
+        return True
+
     @discord.ui.button(label="قبول الطلب", style=discord.ButtonStyle.success, custom_id="h_acc_req", emoji="✅")
     async def accept(self, interaction: discord.Interaction, b: discord.ui.Button):
+        if not await self.check_permission(interaction): return
         await interaction.response.defer()
+        
         code = generate_request_code()
         emb = interaction.message.embeds
         emb[0].title = f"✅ تم قبول الطلب [كود: {code}]"
         emb[0].color = discord.Color.green()
+        emb[0].add_field(name="💼 المسؤول المستلم:", value=interaction.user.mention, inline=False)
         for child in self.children: child.disabled = True
         await interaction.message.edit(embed=emb[0], view=self)
         
@@ -32,7 +50,7 @@ class RequestActionsView(discord.ui.View):
         if m:
             try: await m.send(embed=dm)
             except: pass
-        for l_id in [LOG_1, LOG_2]:
+        for l_id in LOG_CHANNELS:
             ch = interaction.guild.get_channel(l_id)
             if ch:
                 try: await ch.send(embed=dm)
@@ -40,10 +58,13 @@ class RequestActionsView(discord.ui.View):
 
     @discord.ui.button(label="رفض الطلب", style=discord.ButtonStyle.danger, custom_id="h_rej_req", emoji="❌")
     async def reject(self, interaction: discord.Interaction, b: discord.ui.Button):
+        if not await self.check_permission(interaction): return
         await interaction.response.defer()
+        
         emb = interaction.message.embeds
         emb[0].title = f"❌ تم رفض الطلب | {self.req_type}"
         emb[0].color = discord.Color.red()
+        emb[0].add_field(name="👤 المرفوض بواسطة:", value=interaction.user.mention, inline=False)
         for child in self.children: child.disabled = True
         await interaction.message.edit(embed=emb[0], view=self)
         
@@ -52,7 +73,7 @@ class RequestActionsView(discord.ui.View):
         if m:
             try: await m.send(embed=dm)
             except: pass
-        for l_id in [LOG_1, LOG_2]:
+        for l_id in LOG_CHANNELS:
             ch = interaction.guild.get_channel(l_id)
             if ch:
                 try: await ch.send(embed=dm)
@@ -109,8 +130,8 @@ class RequestsSystem(commands.Cog):
     @app_commands.checks.has_permissions(administrator=True)
     async def setup_requests(self, interaction: discord.Interaction):
         p = discord.Embed(title="✨ طلبات السيرفر ✨", description="اطلب وتبشر به\n\nاضغط على الزر المناسب بالأسفل لتقديم طلبك مباشرة إلى الإدارة.", color=0x202020)
-        p.set_image(url="https://f.top4top.io/p_39222by2f1.png")
-        await interaction.response.send_message("⌛ جاري الإطلاق بالصورة والروم الجديدة...", ephemeral=True)
+        p.set_image(url="https://i.top4top.io/p_3922xxfm21.png")
+        await interaction.response.send_message("⌛ جاري الإطلاق...", ephemeral=True)
         ch = self.bot.get_channel(TARGET_SEND_CHANNEL_ID) or interaction.channel
         await ch.send(embed=p, view=RequestButtonsView())
 
